@@ -1,0 +1,6 @@
+bin/
+tmp/
+.git/
+test-*.json
+*.pdf
+*.log
