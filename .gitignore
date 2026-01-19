@@ -1,0 +1,19 @@
+# General
+.DS_Store
+.vscode/
+.idea/
+
+# Backend (invoicer)
+invoicer/bin/
+invoicer/tmp/
+
+# Frontend (ui)
+ui/node_modules/
+ui/dist/
+ui/.env
+ui/.env.local
+
+# Global Secrets
+**/.env
+**/.env.*
+!**/.env.example

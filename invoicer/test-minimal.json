@@ -1,0 +1,39 @@
+{
+  "selectedTemplate": "minimal",
+  "invoiceNumber": "INV-001",
+  "invoiceDate": "2026-01-20",
+  "dueDate": "2026-02-20",
+  "businessName": "Test Business Inc",
+  "businessEmail": "business@test.com",
+  "businessPhone": "+1 (555) 123-4567",
+  "businessAddress": "123 Business Street\nSuite 100",
+  "clientName": "Acme Corporation",
+  "clientEmail": "client@acme.com",
+  "clientAddress": "456 Client Avenue",
+  "currency": "USD",
+  "items": [
+    {
+      "description": "Web Development Services",
+      "quantity": 40,
+      "rate": 150,
+      "taxRate": 0,
+      "discountRate": 0,
+      "amount": 6000
+    },
+    {
+      "description": "Design Services",
+      "quantity": 20,
+      "rate": 100,
+      "taxRate": 10,
+      "discountRate": 5,
+      "amount": 2090
+    }
+  ],
+  "subtotal": 8090,
+  "discountRate": 5,
+  "discountAmount": 404.50,
+  "taxRate": 10,
+  "taxAmount": 768.55,
+  "total": 8454.05,
+  "notes": "Payment terms: Net 30 days\nThank you for your business!"
+}
