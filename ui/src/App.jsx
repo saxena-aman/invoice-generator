@@ -3,8 +3,11 @@ import Header from './components/Header';
 import InvoiceForm from './components/InvoiceForm';
 import InvoicePreview from './components/InvoicePreview';
 import InvoiceList from './components/InvoiceList';
+import LoginPage from './components/LoginPage';
+import SignupPage from './components/SignupPage';
 import { saveInvoice } from './utils/storage';
 import { useToast } from './context/ToastContext';
+import { useAuth } from './context/AuthContext';
 
 const INITIAL_STATE = {
   businessName: '',
@@ -32,6 +35,8 @@ const INITIAL_STATE = {
 
 function App() {
   const { addToast } = useToast();
+  const { isAuthenticated } = useAuth();
+  const [authView, setAuthView] = useState('login'); // 'login' or 'signup'
   const [currentView, setCurrentView] = useState('form'); // 'form' or 'list'
   const [selectedTemplate, setSelectedTemplate] = useState('minimal');
   const [invoiceData, setInvoiceData] = useState({
@@ -57,6 +62,16 @@ function App() {
     addToast('Current invoice saved. Started a new invoice.', 'success');
   };
 
+  // ── Auth gate ───────────────────────────────────────────────────────
+  if (!isAuthenticated) {
+    return authView === 'login' ? (
+      <LoginPage onSwitchToSignup={() => setAuthView('signup')} />
+    ) : (
+      <SignupPage onSwitchToLogin={() => setAuthView('login')} />
+    );
+  }
+
+  // ── Authenticated UI ───────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 

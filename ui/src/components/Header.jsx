@@ -1,11 +1,13 @@
-import { FileText, List, Download, Upload } from 'lucide-react';
+import { FileText, List, Download, Upload, LogOut } from 'lucide-react';
 import { exportData, importData } from '../utils/storage';
 import { useRef } from 'react';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import Tooltip from './Tooltip';
 
 function Header({ currentView, setCurrentView, setInvoiceData, setSelectedTemplate, onNewInvoice }) {
   const { addToast } = useToast();
+  const { user, logout } = useAuth();
   const fileInputRef = useRef(null);
 
   const handleExport = () => {
@@ -70,6 +72,11 @@ function Header({ currentView, setCurrentView, setInvoiceData, setSelectedTempla
     event.target.value = '';
   };
 
+  const handleLogout = () => {
+    logout();
+    addToast('Logged out successfully', 'info');
+  };
+
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 py-4">
@@ -130,6 +137,27 @@ function Header({ currentView, setCurrentView, setInvoiceData, setSelectedTempla
               onChange={handleFileChange}
               className="hidden"
             />
+
+            {/* Separator */}
+            <div className="w-px h-8 bg-gray-200"></div>
+
+            {/* User info & Logout */}
+            {user && (
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-600 font-medium truncate max-w-[160px]">
+                  {user.name || user.email}
+                </span>
+                <Tooltip content="Sign out">
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    id="logout-btn"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </Tooltip>
+              </div>
+            )}
           </nav>
         </div>
       </div>

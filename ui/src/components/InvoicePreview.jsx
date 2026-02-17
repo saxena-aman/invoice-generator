@@ -6,9 +6,12 @@ import ModernTemplate from '../templates/ModernTemplate';
 import { useState } from 'react';
 
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import { downloadInvoicePDF } from '../utils/pdfGenerator';
 
 function InvoicePreview({ invoiceData, selectedTemplate }) {
   const { addToast } = useToast();
+  const { token } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Get currency symbol
@@ -18,35 +21,10 @@ function InvoicePreview({ invoiceData, selectedTemplate }) {
   const downloadPDF = async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/generate-pdf`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...invoiceData,
-          selectedTemplate,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate PDF');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const clientName = invoiceData.clientName || 'Client';
-      const safeClientName = clientName.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_');
-      a.download = `Invoice_for_${safeClientName}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      await downloadInvoicePDF(invoiceData, selectedTemplate, token);
     } catch (error) {
       console.error('Error generating PDF:', error);
-      addToast('Failed to generate PDF. Please try again.', 'error');
+      addToast(error.message || 'Failed to generate PDF. Please try again.', 'error');
     } finally {
       setIsGenerating(false);
     }
