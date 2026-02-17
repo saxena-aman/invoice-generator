@@ -1,0 +1,435 @@
+{
+    "info": {
+        "name": "Invoice Generator API",
+        "description": "API collection for the Invoice Generator with JWT/OAuth2 authentication and rate limiting.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "access_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refresh_token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Health",
+            "item": [
+                {
+                    "name": "Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/health",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Public endpoint — no auth required. Returns service health status."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.collectionVariables.set('access_token', json.accessToken);",
+                                    "    pm.collectionVariables.set('refresh_token', json.refreshToken);",
+                                    "    pm.test('Registration successful', () => {",
+                                    "        pm.expect(json.tokenType).to.eql('Bearer');",
+                                    "        pm.expect(json.expiresIn).to.be.above(0);",
+                                    "        pm.expect(json.accessToken).to.be.a('string');",
+                                    "        pm.expect(json.refreshToken).to.be.a('string');",
+                                    "    });",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Test User\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Register a new user. Tokens are auto-saved to collection variables."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register — Duplicate Email",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Test User\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Expect 409 Conflict if the email is already registered."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register — Validation Error (short password)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"bad@example.com\",\n  \"password\": \"short\",\n  \"name\": \"Bad User\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Expect 400 Bad Request — password must be ≥ 8 characters."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.collectionVariables.set('access_token', json.accessToken);",
+                                    "    pm.collectionVariables.set('refresh_token', json.refreshToken);",
+                                    "    pm.test('Login successful', () => {",
+                                    "        pm.expect(json.tokenType).to.eql('Bearer');",
+                                    "        pm.expect(json.expiresIn).to.be.above(0);",
+                                    "    });",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with email/password. Tokens are auto-saved to collection variables."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login — Wrong Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Expect 401 Unauthorized."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Refresh Token",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.collectionVariables.set('access_token', json.accessToken);",
+                                    "    pm.collectionVariables.set('refresh_token', json.refreshToken);",
+                                    "    pm.test('Token refreshed', () => {",
+                                    "        pm.expect(json.tokenType).to.eql('Bearer');",
+                                    "    });",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/refresh",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "refresh"
+                            ]
+                        },
+                        "description": "Exchange refresh token for a new access + refresh token pair."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Google OAuth Login",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/google",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "google"
+                            ]
+                        },
+                        "description": "Redirects to Google consent screen. Requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to be set."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Invoice (Protected)",
+            "item": [
+                {
+                    "name": "Generate PDF — With Auth",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"selectedTemplate\": \"minimal\",\n  \"invoiceNumber\": \"INV-001\",\n  \"invoiceDate\": \"2026-01-20\",\n  \"dueDate\": \"2026-02-20\",\n  \"businessName\": \"My Business\",\n  \"businessEmail\": \"business@example.com\",\n  \"businessPhone\": \"+1234567890\",\n  \"businessAddress\": \"123 Business St\",\n  \"clientName\": \"Client Name\",\n  \"clientEmail\": \"client@example.com\",\n  \"clientAddress\": \"456 Client Ave\",\n  \"currency\": \"USD\",\n  \"items\": [\n    {\n      \"description\": \"Web Development\",\n      \"quantity\": 10,\n      \"rate\": 100,\n      \"taxRate\": 10,\n      \"discountRate\": 5,\n      \"amount\": 1045\n    }\n  ],\n  \"subtotal\": 1045,\n  \"discountRate\": 5,\n  \"discountAmount\": 52.25,\n  \"taxRate\": 10,\n  \"taxAmount\": 99.28,\n  \"total\": 1092.03,\n  \"notes\": \"Payment terms: Net 30\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/generate-pdf",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "generate-pdf"
+                            ]
+                        },
+                        "description": "Generate a PDF invoice. Requires valid access token. Response is a PDF file."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Generate PDF — Corporate Template",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"selectedTemplate\": \"corporate\",\n  \"invoiceNumber\": \"INV-002\",\n  \"invoiceDate\": \"2026-01-20\",\n  \"dueDate\": \"2026-02-20\",\n  \"businessName\": \"Corporate Inc.\",\n  \"businessEmail\": \"hello@corporate.com\",\n  \"businessPhone\": \"+1234567890\",\n  \"businessAddress\": \"789 Corporate Blvd\",\n  \"clientName\": \"Enterprise Client\",\n  \"clientEmail\": \"client@enterprise.com\",\n  \"clientAddress\": \"321 Enterprise Way\",\n  \"currency\": \"USD\",\n  \"items\": [\n    {\n      \"description\": \"Consulting\",\n      \"quantity\": 20,\n      \"rate\": 150,\n      \"taxRate\": 10,\n      \"discountRate\": 0,\n      \"amount\": 3300\n    },\n    {\n      \"description\": \"Implementation\",\n      \"quantity\": 40,\n      \"rate\": 120,\n      \"taxRate\": 10,\n      \"discountRate\": 10,\n      \"amount\": 4752\n    }\n  ],\n  \"subtotal\": 8052,\n  \"discountRate\": 0,\n  \"discountAmount\": 0,\n  \"taxRate\": 10,\n  \"taxAmount\": 805.20,\n  \"total\": 8857.20,\n  \"notes\": \"Thank you for your business!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/generate-pdf",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "generate-pdf"
+                            ]
+                        },
+                        "description": "Generate a corporate-styled PDF with multiple line items."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Generate PDF — No Auth (expect 401)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"selectedTemplate\": \"minimal\",\n  \"invoiceNumber\": \"INV-001\",\n  \"invoiceDate\": \"2026-01-20\",\n  \"dueDate\": \"2026-02-20\",\n  \"businessName\": \"My Business\",\n  \"businessEmail\": \"business@example.com\",\n  \"businessPhone\": \"+1234567890\",\n  \"businessAddress\": \"123 Business St\",\n  \"clientName\": \"Client Name\",\n  \"clientEmail\": \"client@example.com\",\n  \"clientAddress\": \"456 Client Ave\",\n  \"currency\": \"USD\",\n  \"items\": [\n    {\n      \"description\": \"Service\",\n      \"quantity\": 1,\n      \"rate\": 100,\n      \"taxRate\": 0,\n      \"discountRate\": 0,\n      \"amount\": 100\n    }\n  ],\n  \"subtotal\": 100,\n  \"discountRate\": 0,\n  \"discountAmount\": 0,\n  \"taxRate\": 0,\n  \"taxAmount\": 0,\n  \"total\": 100,\n  \"notes\": \"\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/generate-pdf",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "generate-pdf"
+                            ]
+                        },
+                        "description": "Should return 401 Unauthorized — no Authorization header."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Generate PDF — Invalid Token (expect 401)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer invalid.token.here"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"selectedTemplate\": \"minimal\",\n  \"invoiceNumber\": \"INV-001\",\n  \"invoiceDate\": \"2026-01-20\",\n  \"dueDate\": \"2026-02-20\",\n  \"businessName\": \"My Business\",\n  \"businessEmail\": \"business@example.com\",\n  \"businessPhone\": \"+1234567890\",\n  \"businessAddress\": \"123 Business St\",\n  \"clientName\": \"Client Name\",\n  \"clientEmail\": \"client@example.com\",\n  \"clientAddress\": \"456 Client Ave\",\n  \"currency\": \"USD\",\n  \"items\": [\n    {\n      \"description\": \"Service\",\n      \"quantity\": 1,\n      \"rate\": 100,\n      \"taxRate\": 0,\n      \"discountRate\": 0,\n      \"amount\": 100\n    }\n  ],\n  \"subtotal\": 100,\n  \"discountRate\": 0,\n  \"discountAmount\": 0,\n  \"taxRate\": 0,\n  \"taxAmount\": 0,\n  \"total\": 100,\n  \"notes\": \"\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/generate-pdf",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "generate-pdf"
+                            ]
+                        },
+                        "description": "Should return 401 Unauthorized — invalid JWT token."
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}

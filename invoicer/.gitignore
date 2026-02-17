@@ -1,0 +1,7 @@
+client_secret_*.json
+.env
+.env.local
+.env.prod
+.env.dev
+.env.test
+.env.example
